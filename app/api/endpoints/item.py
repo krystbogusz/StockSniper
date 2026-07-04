@@ -1,6 +1,8 @@
+import asyncio
 from fastapi import APIRouter, HTTPException
 from app.schemas.item import ItemRequest, ItemUpdateRequest, ItemActionResponse, ItemListResponse
 from app.core.item_manager import item_manager
+from app.core.llm_client import check_url_safety
 
 router = APIRouter()
 
@@ -10,6 +12,10 @@ def get_seconds(value: int, unit: str) -> int:
 
 @router.post("/add", response_model=ItemActionResponse)
 async def add_item(request: ItemRequest):
+    is_safe, reason = await asyncio.to_thread(check_url_safety, request.url)
+    if not is_safe:
+        raise HTTPException(status_code=400, detail=f"URL rejected by security check: {reason}")
+        
     interval_sec = get_seconds(request.interval_value, request.interval_unit)
     success, message = item_manager.add_item(request.url, request.size, interval_sec)
     if not success:
@@ -18,6 +24,10 @@ async def add_item(request: ItemRequest):
 
 @router.post("/update", response_model=ItemActionResponse)
 async def update_item(request: ItemUpdateRequest):
+    is_safe, reason = await asyncio.to_thread(check_url_safety, request.url)
+    if not is_safe:
+        raise HTTPException(status_code=400, detail=f"URL rejected by security check: {reason}")
+        
     interval_sec = get_seconds(request.interval_value, request.interval_unit)
     success, message = item_manager.update_item(request.id, request.url, interval_sec)
     if not success:

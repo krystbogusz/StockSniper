@@ -39,6 +39,7 @@ The API uses two types of authentication:
 - `GET /process/status` - Checks if the background script is running.
 
 ### Watchlist (Items)
+*(Note: Adding or updating an item triggers an automatic AI-powered security check to prevent tracking malicious URLs)*
 - `POST /item/add` - Adds a new product URL and size to the watchlist.
   ```json
   {

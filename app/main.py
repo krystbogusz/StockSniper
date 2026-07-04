@@ -6,7 +6,6 @@ from app.api.endpoints import process, item
 from app.api.dependencies import verify_basic, verify_bearer
 from app.core.config import settings
 
-# Wyłączamy domyślne docs żeby móc je zabezpieczyć własnym endpointem
 app = FastAPI(
     title=settings.project_name,
     description="API for managing machine processes and watchlists.",
@@ -16,7 +15,6 @@ app = FastAPI(
     openapi_url=None
 )
 
-# Rejestracja endpointów zabezpieczonych Bearer tokenem
 app.include_router(
     process.router, 
     prefix="/process", 
@@ -35,7 +33,6 @@ app.include_router(
 async def root():
     return RedirectResponse(url="/docs")
 
-# Zabezpieczone endpointy Swaggera logowaniem Basic (login i hasło)
 @app.get("/docs", include_in_schema=False)
 async def get_documentation(username: str = Depends(verify_basic)):
     return get_swagger_ui_html(openapi_url="/openapi.json", title="docs")
@@ -43,5 +40,3 @@ async def get_documentation(username: str = Depends(verify_basic)):
 @app.get("/openapi.json", include_in_schema=False)
 async def get_open_api_endpoint(username: str = Depends(verify_basic)):
     return JSONResponse(get_openapi(title="StockSniper API", version="1.0.0", routes=app.routes))
-
-

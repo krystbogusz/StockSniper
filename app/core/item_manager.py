@@ -44,7 +44,6 @@ class ItemManager:
                     return False, "This size is already tracked for this product."
                 else:
                     data[existing_id]["sizes"].append(size)
-                    # Nadpisujemy interwał dla wszystkich
                     data[existing_id]["interval_seconds"] = interval_seconds
                     self._write_data(data)
                     return True, f"Size {size} added to existing product (ID {existing_id}). Interval updated."
@@ -70,7 +69,6 @@ class ItemManager:
             if item_id not in data:
                 return False, "Item ID not found."
                 
-            # Zabezpieczenie przed zduplikowaniem URL
             for k, v in data.items():
                 if k != item_id and v.get("url") == new_url:
                     return False, "Another item with this URL already exists in the watchlist."
