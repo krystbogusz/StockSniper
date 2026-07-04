@@ -40,8 +40,6 @@ Website text:
 
 def check_url_safety(url: str) -> tuple[bool, str]:
     if not model:
-        # If API key is not configured, we might want to let it pass or block it. 
-        # Let's pass with a warning so development without LLM is possible.
         return True, "LLM not configured, skipping safety check."
 
     prompt = f"""

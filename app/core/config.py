@@ -16,7 +16,6 @@ class Settings(BaseSettings):
     smtp_user: str = Field(default="", alias="SMTP_USER")
     smtp_password: str = Field(default="", alias="SMTP_PASSWORD")
     email_to: str = Field(default="", alias="EMAIL_TO")
-    check_interval_seconds: int = Field(default=300, alias="CHECK_INTERVAL_SECONDS")
 
     class Config:
         env_file = ".env"
