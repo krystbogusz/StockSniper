@@ -21,6 +21,8 @@ from app.core.logger import monitor_logger
 ITEMS_FILE = "data/items.json"
 TICK_SECONDS = 5
 
+import shutil
+
 def setup_driver():
     chrome_options = Options()
     chrome_options.add_argument("--headless")
@@ -41,7 +43,16 @@ def setup_driver():
     }
     chrome_options.add_experimental_option("prefs", prefs)
     chrome_options.add_argument("--log-level=3")
-    service = Service(ChromeDriverManager().install())
+    
+    system_chromedriver = shutil.which("chromedriver")
+    if system_chromedriver:
+        service = Service(system_chromedriver)
+    else:
+        try:
+            service = Service(ChromeDriverManager().install())
+        except Exception:
+            service = Service()
+            
     driver = webdriver.Chrome(service=service, options=chrome_options)
     driver.set_page_load_timeout(30)
     return driver
@@ -78,6 +89,7 @@ def main():
                 driver = None
                 try:
                     driver = setup_driver()
+                    monitor_logger.info("Chromium driver initialized successfully.")
                     for item_id, url, sizes in items_to_check:
                         monitor_logger.info(f"Checking: {url} for sizes: {sizes}")
                         try:
@@ -85,6 +97,7 @@ def main():
                             time.sleep(3)
                             body_element = driver.find_element(By.TAG_NAME, "body")
                             text_content = body_element.text
+                            monitor_logger.info(f"Sending LLM query for {url} to check sizes {sizes}. Text length to analyze: {len(text_content)} chars.")
                             available = check_availability(text_content, sizes)
                             if available:
                                 monitor_logger.info(f"Available sizes found: {available} for {url}")

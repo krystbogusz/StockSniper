@@ -10,3 +10,4 @@ webdriver-manager
 pytest
 pytest-asyncio
 httpx
+httpx2
