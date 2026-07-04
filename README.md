@@ -39,8 +39,31 @@ The API uses two types of authentication:
 - `GET /process/status` - Checks if the background script is running.
 
 ### Watchlist (Items)
-- `POST /item/add` - Adds a new product URL to the watchlist (JSON body: `{"url": "http..."}`).
-- `POST /item/delete` - Removes a product URL from the watchlist (JSON body: `{"url": "http..."}`).
+- `POST /item/add` - Adds a new product URL and size to the watchlist.
+  ```json
+  {
+    "url": "https://example.com/shoes",
+    "size": "42",
+    "interval_value": 5,
+    "interval_unit": "minutes"
+  }
+  ```
+- `POST /item/update` - Updates the URL and check interval for a specific product ID.
+  ```json
+  {
+    "id": "1",
+    "url": "https://example.com/new-shoes",
+    "interval_value": 30,
+    "interval_unit": "seconds"
+  }
+  ```
+- `POST /item/delete` - Removes a specific size from a product. If it's the last size, the product is removed.
+  ```json
+  {
+    "url": "https://example.com/shoes",
+    "size": "42"
+  }
+  ```
 - `GET /item/list` - Returns all observed items.
 
 ### Documentation
