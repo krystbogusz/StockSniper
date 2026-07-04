@@ -1,15 +1,14 @@
 import json
-import google.generativeai as genai
+from google import genai
 from app.core.config import settings
 
 if settings.llm_api_key and settings.llm_api_key != "your_gemini_api_key_here":
-    genai.configure(api_key=settings.llm_api_key)
-    model = genai.GenerativeModel('gemini-1.5-flash')
+    client = genai.Client(api_key=settings.llm_api_key)
 else:
-    model = None
+    client = None
 
 def check_availability(text_content: str, sizes: list[str]) -> list[str]:
-    if not model:
+    if not client:
         print("LLM Model not configured.", flush=True)
         return []
 
@@ -25,7 +24,10 @@ Website text:
 {text_content[:25000]}
 """
     try:
-        response = model.generate_content(prompt)
+        response = client.models.generate_content(
+            model='gemini-1.5-flash', 
+            contents=prompt
+        )
         response_text = response.text.strip()
         if response_text.startswith("```json"):
             response_text = response_text.replace("```json", "").replace("```", "").strip()
@@ -39,7 +41,7 @@ Website text:
         return []
 
 def check_url_safety(url: str) -> tuple[bool, str]:
-    if not model:
+    if not client:
         return True, "LLM not configured, skipping safety check."
 
     prompt = f"""
@@ -51,7 +53,10 @@ Example: {{"is_safe": false, "reason": "The domain appears to be a known phishin
 URL to evaluate: {url}
 """
     try:
-        response = model.generate_content(prompt)
+        response = client.models.generate_content(
+            model='gemini-1.5-flash', 
+            contents=prompt
+        )
         response_text = response.text.strip()
         if response_text.startswith("```json"):
             response_text = response_text.replace("```json", "").replace("```", "").strip()
