@@ -67,6 +67,9 @@ def test_item_list(client, auth_headers):
 
 
 def test_item_delete(client, auth_headers):
+    from app.core.item_manager import item_manager
+    item_manager._write_data({})
+    
     with patch("app.api.endpoints.item.check_url_safety", return_value=(True, "Safe")):
         client.post(
             "/item/add",
@@ -80,10 +83,8 @@ def test_item_delete(client, auth_headers):
         )
 
     payload = {
-        "url": "https://test.com/delete-me",
-        "size": "L",
-        "interval_value": 1,
-        "interval_unit": "hours",
+        "id": "1",
+        "size": "L"
     }
     response = client.post("/item/delete", json=payload, headers=auth_headers)
     assert response.status_code == 200
@@ -91,7 +92,6 @@ def test_item_delete(client, auth_headers):
 
 
 def test_settings_toggle_logging(client, auth_headers):
-    # Test enabling logging
     response = client.post(
         "/settings/logging", json={"enabled": True}, headers=auth_headers
     )
@@ -99,7 +99,6 @@ def test_settings_toggle_logging(client, auth_headers):
     assert response.json()["success"] is True
     assert "enabled" in response.json()["message"]
 
-    # Test disabling logging
     response = client.post(
         "/settings/logging", json={"enabled": False}, headers=auth_headers
     )

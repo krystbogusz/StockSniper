@@ -28,7 +28,7 @@ Website text:
 """
     try:
         response = client.models.generate_content(
-            model="gemini-2.5-flash", contents=prompt
+            model="gemini-3.5-flash", contents=prompt
         )
         response_text = response.text.strip()
         if response_text.startswith("```json"):
@@ -61,7 +61,7 @@ URL to evaluate: {url}
 """
     try:
         response = client.models.generate_content(
-            model="gemini-2.5-flash", contents=prompt
+            model="gemini-3.5-flash", contents=prompt
         )
         response_text = response.text.strip()
         if response_text.startswith("```json"):

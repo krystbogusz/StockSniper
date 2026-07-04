@@ -5,24 +5,26 @@ from app.core import llm_client
 
 def test_check_availability_found():
     mock_response = MagicMock()
-    mock_response.text = '{"available_sizes": ["42"]}'
+    mock_response.text = '{"available_sizes": ["42"], "product_name": "Nike Shoes"}'
 
     with patch.object(
         llm_client.client.models, "generate_content", return_value=mock_response
     ):
-        sizes = llm_client.check_availability("Przykładowy tekst strony", ["42", "44"])
+        sizes, product_name = llm_client.check_availability("Przykładowy tekst strony", ["42", "44"])
         assert sizes == ["42"]
+        assert product_name == "Nike Shoes"
 
 
 def test_check_availability_not_found():
     mock_response = MagicMock()
-    mock_response.text = '{"available_sizes": []}'
+    mock_response.text = '{"available_sizes": [], "product_name": "Nike Shoes"}'
 
     with patch.object(
         llm_client.client.models, "generate_content", return_value=mock_response
     ):
-        sizes = llm_client.check_availability("Strona wyprzedana", ["42"])
+        sizes, product_name = llm_client.check_availability("Strona wyprzedana", ["42"])
         assert sizes == []
+        assert product_name == "Nike Shoes"
 
 
 def test_check_url_safety_safe():
