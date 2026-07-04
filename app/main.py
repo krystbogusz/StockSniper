@@ -2,9 +2,17 @@ from fastapi import FastAPI, Depends
 from fastapi.responses import RedirectResponse, JSONResponse
 from fastapi.openapi.docs import get_swagger_ui_html
 from fastapi.openapi.utils import get_openapi
-from app.api.endpoints import process, item
+from app.api.endpoints import process, item, settings as app_settings
 from app.api.dependencies import verify_basic, verify_bearer
 from app.core.config import settings
+from app.core.logger import api_logger
+
+from contextlib import asynccontextmanager
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    api_logger.info("FastAPI Application startup")
+    yield
 
 app = FastAPI(
     title=settings.project_name,
@@ -12,7 +20,8 @@ app = FastAPI(
     version="1.0.0",
     docs_url=None,
     redoc_url=None,
-    openapi_url=None
+    openapi_url=None,
+    lifespan=lifespan
 )
 
 app.include_router(
@@ -26,6 +35,13 @@ app.include_router(
     item.router, 
     prefix="/item", 
     tags=["Item Watchlist"],
+    dependencies=[Depends(verify_bearer)]
+)
+
+app.include_router(
+    app_settings.router,
+    prefix="/settings",
+    tags=["Settings"],
     dependencies=[Depends(verify_bearer)]
 )
 

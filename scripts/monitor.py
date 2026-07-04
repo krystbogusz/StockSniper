@@ -16,6 +16,7 @@ if parent_dir not in sys.path:
 from app.core.config import settings
 from app.core.email_client import send_email
 from app.core.llm_client import check_availability
+from app.core.logger import monitor_logger
 
 ITEMS_FILE = "data/items.json"
 TICK_SECONDS = 5
@@ -46,9 +47,9 @@ def setup_driver():
     return driver
 
 def main():
-    print("Starting monitoring script with individual intervals (Selenium Headless)...", flush=True)
+    monitor_logger.info("Starting monitoring script with individual intervals (Selenium Headless)...")
     if not settings.llm_api_key or settings.llm_api_key == "your_gemini_api_key_here":
-        print("ERROR: LLM_API_KEY is missing. Script halted.", flush=True)
+        monitor_logger.error("LLM_API_KEY is missing. Script halted.")
         sys.exit(1)
     
     last_checked = {}
@@ -78,7 +79,7 @@ def main():
                 try:
                     driver = setup_driver()
                     for item_id, url, sizes in items_to_check:
-                        print(f"Checking: {url} for sizes: {sizes}", flush=True)
+                        monitor_logger.info(f"Checking: {url} for sizes: {sizes}")
                         try:
                             driver.get(url)
                             time.sleep(3)
@@ -86,27 +87,28 @@ def main():
                             text_content = body_element.text
                             available = check_availability(text_content, sizes)
                             if available:
-                                print(f"Available sizes: {available}", flush=True)
+                                monitor_logger.info(f"Available sizes found: {available} for {url}")
                                 subject = f"PRODUCT AVAILABLE! Sizes: {', '.join(available)}"
                                 body = f"Your observed product is available in sizes: {', '.join(available)}\n\nLink: {url}"
                                 send_email(subject, body)
+                                monitor_logger.info("Notification email sent.")
                             else:
-                                print(f"Unavailable: {url}", flush=True)
+                                monitor_logger.info(f"Unavailable: {url}")
                             last_checked[item_id] = time.time()
                         except Exception as e:
-                            print(f"Error while checking {url}: {e}", flush=True)
+                            monitor_logger.error(f"Error while checking {url}: {e}")
                 except Exception as driver_err:
-                    print(f"Error initializing Selenium driver: {driver_err}", flush=True)
+                    monitor_logger.error(f"Error initializing Selenium driver: {driver_err}")
                 finally:
                     if driver:
                         driver.quit()
         except Exception as e:
-            print(f"Main loop error: {e}", flush=True)
+            monitor_logger.error(f"Main loop error: {e}")
         time.sleep(TICK_SECONDS)
 
 if __name__ == "__main__":
     try:
         main()
     except KeyboardInterrupt:
-        print("Script stopped manually.", flush=True)
+        monitor_logger.info("Script stopped manually.")
         sys.exit(0)

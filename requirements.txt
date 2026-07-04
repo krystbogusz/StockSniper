@@ -7,3 +7,6 @@ psutil>=5.9.8
 google-genai
 selenium
 webdriver-manager
+pytest
+pytest-asyncio
+httpx

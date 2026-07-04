@@ -1,46 +1,89 @@
-# StockSniper API
+# StockSniper
 
-Simple FastAPI application to manage background processes for tracking observed items (watchlist).
+StockSniper is a smart, automated e-commerce monitoring system. It combines a RESTful API (FastAPI) for managing watchlists and an independent background script (Selenium Headless) to monitor specific products for availability. When a product is available, it notifies the user via email. It leverages Google's Gemini GenAI to check for phishing/unsafe links and intelligently parse page contents to locate available sizes.
 
-## Setup
+## Features
 
-1. Create a virtual environment (optional but recommended):
+- **FastAPI Backend:** Secure REST API for managing monitored items and the background worker process.
+- **Headless Selenium Scraping:** Handles complex JavaScript-rendered e-commerce sites efficiently, extracting full text.
+- **AI-Powered Analysis:** Uses `google-genai` to parse text and check for exact requested sizes, bypassing CAPTCHAs and complex DOM structures.
+- **URL Security Checks:** Automatically assesses URLs via LLM to reject phishing or malicious links before they are stored.
+- **Dynamic Logging System:** Toggable logging mechanism for debugging, logging API access and script operations without a restart.
+- **Email Notifications:** Instant alerts using SMTP when a product matches your criteria.
+- **Comprehensive Test Suite:** Unit testing with `pytest` using mocked AI responses and mocked network calls.
+
+## Prerequisites
+
+- Python 3.13+
+- Google Chrome (for Selenium to run in headless mode)
+- A Google Gemini API Key
+- SMTP credentials (e.g., Gmail App Password)
+
+## Installation
+
+1. **Clone the repository:**
+   ```bash
+   git clone <repo-url>
+   cd StockSniper
+   ```
+
+2. **Set up a virtual environment and install dependencies:**
    ```bash
    python -m venv .venv
    .venv\Scripts\activate
-   ```
-2. Install dependencies:
-   ```bash
    pip install -r requirements.txt
    ```
-3. Setup configuration:
-   ```bash
-   cp .env.example .env
-   ```
-   *Edit `.env` and set your preferred usernames, passwords, and tokens.*
 
-## Running the API
+3. **Configure Environment Variables:**
+   Create a `.env` file in the root directory based on the following template:
+
+   ```env
+   # API Settings
+   API_HOST=0.0.0.0
+   API_PORT=8000
+   API_USERNAME=admin
+   API_PASSWORD=secret
+   API_TOKEN=your_secure_bearer_token
+
+   # Background Script Settings
+   SCRIPT_PATH=./scripts/monitor.py
+
+   # GenAI Settings
+   LLM_API_KEY=your_gemini_api_key_here
+
+   # Email Settings
+   SMTP_SERVER=smtp.gmail.com
+   SMTP_PORT=587
+   SMTP_USER=your_email@gmail.com
+   SMTP_PASSWORD=your_app_password
+   EMAIL_TO=recipient_email@gmail.com
+   ```
+
+## Running the Application
+
+### 1. Start the API Server
 
 ```bash
 uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
 ```
+You can access the Swagger UI documentation securely via Basic Auth at `http://localhost:8000/docs`.
 
-## Authentication
+### 2. Manage the Monitor Process
 
-The API uses two types of authentication:
-1. **HTTP Basic Auth**: Secures the Swagger Documentation (`/docs` and `/openapi.json`). Your browser will prompt for a username and password (configured via `API_USERNAME` and `API_PASSWORD`).
-2. **HTTP Bearer Token**: Secures all operational endpoints (`/process` and `/item`). Include the token in the `Authorization: Bearer <TOKEN>` header (configured via `API_TOKEN`).
+You can start or stop the background scraping process using the API (or via the provided Postman collection):
+
+- **Start:** `POST /process/start` (Requires Bearer Token)
+- **Stop:** `POST /process/stop` (Requires Bearer Token)
+- **Status:** `GET /process/status` (Requires Bearer Token)
 
 ## API Endpoints
 
-### Process Management
-- `POST /process/start` - Starts the background script.
-- `POST /process/stop` - Stops the background script.
-- `GET /process/status` - Checks if the background script is running.
+All functional endpoints require `Authorization: Bearer <API_TOKEN>`.
 
-### Watchlist (Items)
-*(Note: Adding or updating an item triggers an automatic AI-powered security check to prevent tracking malicious URLs)*
-- `POST /item/add` - Adds a new product URL and size to the watchlist.
+### Item Watchlist (`/item`)
+
+- `GET /item/list`: Returns all monitored items.
+- `POST /item/add`: Add a new product to monitor.
   ```json
   {
     "url": "https://example.com/shoes",
@@ -49,23 +92,33 @@ The API uses two types of authentication:
     "interval_unit": "minutes"
   }
   ```
-- `POST /item/update` - Updates the URL and check interval for a specific product ID.
-  ```json
-  {
-    "id": "1",
-    "url": "https://example.com/new-shoes",
-    "interval_value": 30,
-    "interval_unit": "seconds"
-  }
-  ```
-- `POST /item/delete` - Removes a specific size from a product. If it's the last size, the product is removed.
-  ```json
-  {
-    "url": "https://example.com/shoes",
-    "size": "42"
-  }
-  ```
-- `GET /item/list` - Returns all observed items.
+- `POST /item/update`: Update the monitoring interval of an existing item by its ID.
+- `POST /item/delete`: Remove an item from the watchlist.
 
-### Documentation
-- `GET /docs` - Interactive Swagger UI for the API (requires Basic Auth).
+### Settings (`/settings`)
+
+- `POST /settings/logging`: Dynamically toggle disk logging on or off for both the API and the monitor script.
+  ```json
+  {
+    "enabled": true
+  }
+  ```
+  *Logs are saved in the `logs/` directory.*
+
+## Postman Collection
+
+A ready-to-use Postman collection is included in the root directory (`postman_collection.json`). Import it into Postman to easily interact with all endpoints. Make sure to set the `bearer_token` collection variable to match your `API_TOKEN`.
+
+## Testing
+
+The project uses `pytest` for unit testing. Tests include mock models for Google GenAI to prevent real API calls and charges.
+
+To run the test suite:
+```bash
+pytest
+```
+
+## Architecture Notes
+
+- **Process Isolation:** The monitoring script runs as an isolated subprocess. State changes (like turning logging on/off) are communicated via a shared `data/settings.json` configuration file.
+- **Low Resource Usage:** The Selenium driver is heavily configured with flags to run headlessly without rendering images, UI components, or plugins, ensuring minimal overhead on VPS servers.
