@@ -5,17 +5,17 @@ StockSniper is a smart, automated e-commerce monitoring system. It combines a RE
 ## Features
 
 - **FastAPI Backend:** Secure REST API for managing monitored items and the background worker process.
-- **Headless Selenium Scraping:** Handles complex JavaScript-rendered e-commerce sites efficiently, extracting full text.
-- **AI-Powered Analysis:** Uses `google-genai` to parse text and check for exact requested sizes, bypassing CAPTCHAs and complex DOM structures.
+- **Headless Browser Scraping:** Uses `Playwright` with Firefox to effectively bypass CDNs and bot-protections, rendering JavaScript and extracting XHR APIs.
+- **AI-Powered Analysis:** Uses `google-genai` to parse text and check for exact requested sizes, bypassing complex DOM structures and ignoring cross-sells.
 - **URL Security Checks:** Automatically assesses URLs via LLM to reject phishing or malicious links before they are stored.
 - **Dynamic Logging System:** Toggable logging mechanism for debugging, logging API access and script operations without a restart.
-- **Email Notifications:** Instant alerts using SMTP when a product matches your criteria.
+- **Automated Health Checks:** Includes a scheduled health checker endpoint and background task to ensure the scraping monitor never hangs.
+- **Email Notifications:** Instant alerts using SMTP for both product availability and automated script error monitoring.
 - **Comprehensive Test Suite:** Unit testing with `pytest` using mocked AI responses and mocked network calls.
 
 ## Prerequisites
 
 - Python 3.13+
-- Google Chrome (for Selenium to run in headless mode)
 - A Google Gemini API Key
 - SMTP credentials (e.g., Gmail App Password)
 
@@ -74,7 +74,9 @@ You can start or stop the background scraping process using the API (or via the 
 
 - **Start:** `POST /process/start` (Requires Bearer Token)
 - **Stop:** `POST /process/stop` (Requires Bearer Token)
+- **Restart:** `POST /process/restart` (Requires Bearer Token)
 - **Status:** `GET /process/status` (Requires Bearer Token)
+- **Health Check:** `GET /process/health` (Requires Bearer Token)
 
 ## API Endpoints
 
@@ -121,4 +123,5 @@ pytest
 ## Architecture Notes
 
 - **Process Isolation:** The monitoring script runs as an isolated subprocess. State changes (like turning logging on/off) are communicated via a shared `data/settings.json` configuration file.
-- **Low Resource Usage:** The Selenium driver is heavily configured with flags to run headlessly without rendering images, UI components, or plugins, ensuring minimal overhead on VPS servers.
+- **Smart Parsing & Error Recovery:** The script uses `Playwright` to intercept background XHR/JSON requests and hidden SEO data (JSON-LD). It condenses massive HTML blobs using regex before sending payloads to Gemini AI to ensure fast and cheap API usage. All unhandled exceptions trigger immediate email alerts to the administrator.
+- **Clean Codebase:** Fully formatted following strict PEP8 guidelines. All internal and external logs/outputs are in English for maximum maintainability.

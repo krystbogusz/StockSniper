@@ -1,6 +1,7 @@
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from pydantic import Field
 
+
 class Settings(BaseSettings):
     project_name: str = "StockSniper Process API"
     api_host: str = Field(default="0.0.0.0", alias="API_HOST")
@@ -18,5 +19,6 @@ class Settings(BaseSettings):
     email_to: str = Field(default="", alias="EMAIL_TO")
 
     model_config = SettingsConfigDict(env_file=".env")
+
 
 settings = Settings()

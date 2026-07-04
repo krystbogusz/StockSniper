@@ -12,16 +12,18 @@ from app.main import app
 from app.core.item_manager import item_manager
 from app.core.config import settings
 
+
 @pytest.fixture(scope="module")
 def client():
     item_manager.file_path = "data/test_items.json"
     item_manager._ensure_file_exists()
-    
+
     with TestClient(app) as c:
         yield c
-        
+
     if os.path.exists("data/test_items.json"):
         os.remove("data/test_items.json")
+
 
 @pytest.fixture
 def auth_headers():

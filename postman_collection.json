@@ -77,6 +77,34 @@
 					"response": []
 				},
 				{
+					"name": "Restart Process",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{bearer_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/process/restart",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"process",
+								"restart"
+							]
+						}
+					},
+					"response": []
+				},
+				{
 					"name": "Process Status",
 					"request": {
 						"auth": {
@@ -99,6 +127,34 @@
 							"path": [
 								"process",
 								"status"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Process Health Check",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{bearer_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/process/health",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"process",
+								"health"
 							]
 						}
 					},
@@ -243,7 +299,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n  \"url\": \"https://example.com/product123\",\r\n  \"size\": \"42\"\r\n}",
+							"raw": "{\r\n  \"id\": \"1\",\r\n  \"size\": \"42\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
