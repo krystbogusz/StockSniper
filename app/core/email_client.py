@@ -1,25 +1,40 @@
 import smtplib
+import json
+import os
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from app.core.config import settings
 from app.core.logger import monitor_logger
 
 
+def get_target_email() -> str:
+    settings_file = "data/settings.json"
+    if os.path.exists(settings_file):
+        try:
+            with open(settings_file, "r", encoding="utf-8") as f:
+                data = json.load(f)
+                return data.get("email_to", "")
+        except Exception:
+            pass
+    return ""
+
+
 def send_email(subject: str, body: str) -> None:
+    target_email = get_target_email()
     if not all(
         [
             settings.smtp_server,
             settings.smtp_user,
             settings.smtp_password,
-            settings.email_to,
+            target_email,
         ]
     ):
-        monitor_logger.error("Missing SMTP configuration, skipping email.")
+        monitor_logger.error("Missing SMTP configuration or target email, skipping email.")
         return
 
     msg = MIMEMultipart()
     msg["From"] = settings.smtp_user
-    msg["To"] = settings.email_to
+    msg["To"] = target_email
     msg["Subject"] = subject
     msg.attach(MIMEText(body, "plain"))
 

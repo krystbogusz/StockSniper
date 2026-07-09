@@ -15,7 +15,7 @@ router = APIRouter()
 
 
 def get_seconds(value: int, unit: str) -> int:
-    multiplier = {"seconds": 1, "minutes": 60, "hours": 3600}[unit]
+    multiplier = {"minutes": 60, "hours": 3600}[unit]
     return value * multiplier
 
 

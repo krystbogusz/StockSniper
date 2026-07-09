@@ -3,10 +3,10 @@ from typing import Dict, List, Literal
 
 
 def validate_interval(value: int, unit: str) -> int:
-    multiplier = {"seconds": 1, "minutes": 60, "hours": 3600}[unit]
+    multiplier = {"minutes": 60, "hours": 3600}[unit]
     seconds = value * multiplier
-    if seconds < 30:
-        raise ValueError("Interval must be at least 30 seconds.")
+    if seconds < 60:
+        raise ValueError("Interval must be at least 1 minute.")
     return seconds
 
 
@@ -14,7 +14,7 @@ class ItemRequest(BaseModel):
     url: str
     size: str
     interval_value: int
-    interval_unit: Literal["seconds", "minutes", "hours"]
+    interval_unit: Literal["minutes", "hours"]
 
     @model_validator(mode="after")
     def check_min_interval(self) -> "ItemRequest":
@@ -26,7 +26,7 @@ class ItemUpdateRequest(BaseModel):
     id: str
     url: str
     interval_value: int
-    interval_unit: Literal["seconds", "minutes", "hours"]
+    interval_unit: Literal["minutes", "hours"]
 
     @model_validator(mode="after")
     def check_min_interval(self) -> "ItemUpdateRequest":

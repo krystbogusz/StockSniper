@@ -1,17 +1,19 @@
 from fastapi import FastAPI, Depends
-from fastapi.responses import RedirectResponse, JSONResponse
+from fastapi.responses import RedirectResponse, JSONResponse, FileResponse
+from fastapi.staticfiles import StaticFiles
 from fastapi.openapi.docs import get_swagger_ui_html
 from fastapi.openapi.utils import get_openapi
 from app.api.endpoints import process, item, settings as app_settings
 from app.api.dependencies import verify_basic, verify_bearer
+from app.schemas.login import LoginRequest, LoginResponse
 from app.core.config import settings
 from app.core.logger import api_logger
 
+import os
+import secrets
 from contextlib import asynccontextmanager
 import asyncio
 from datetime import datetime, timedelta
-
-
 async def _health_check_loop():
     from app.api.endpoints.process import health_check
 
@@ -58,6 +60,9 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
+os.makedirs("app/static", exist_ok=True)
+app.mount("/static", StaticFiles(directory="app/static"), name="static")
+
 app.include_router(
     process.router,
     prefix="/process",
@@ -82,7 +87,26 @@ app.include_router(
 
 @app.get("/", include_in_schema=False)
 async def root():
-    return RedirectResponse(url="/docs")
+    return RedirectResponse(url="/dashboard")
+
+
+@app.post("/api/login", response_model=LoginResponse, tags=["Authentication"])
+async def login(request: LoginRequest):
+    correct_username = secrets.compare_digest(request.username, settings.api_username)
+    correct_password = secrets.compare_digest(request.password, settings.api_password)
+
+    if not (correct_username and correct_password):
+        from fastapi import HTTPException, status
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect username or password",
+        )
+    return LoginResponse(access_token=settings.api_token, token_type="bearer")
+
+
+@app.get("/dashboard", include_in_schema=False)
+async def get_dashboard():
+    return FileResponse("app/static/index.html")
 
 
 @app.get("/docs", include_in_schema=False)

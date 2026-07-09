@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StockSniper Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div id="toast-container"></div>
+
+    <div class="overlay" id="login-overlay">
+        <div class="modal">
+            <h2>Admin Login</h2>
+            <p>Enter your credentials to manage the live system.</p>
+            <input type="text" id="login-username" placeholder="Username" autocomplete="username">
+            <input type="password" id="login-password" placeholder="Password" autocomplete="current-password">
+            <div class="modal-actions">
+                <button class="btn btn-secondary" onclick="closeLoginModal()">Cancel</button>
+                <button class="btn btn-primary" onclick="handleLogin()">Login</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="overlay" id="edit-overlay">
+        <div class="modal">
+            <h2>Edit Item</h2>
+            <p>Update the URL or interval for this item.</p>
+            <input type="hidden" id="edit-item-id">
+            <input type="url" id="edit-item-url" placeholder="https://example.com" required style="width: 100%; margin-bottom: 1rem; padding: 0.5rem 1rem; background: rgba(15, 23, 42, 0.6); border: 1px solid var(--border-color); border-radius: 8px; color: white;">
+            <div class="input-group" style="margin-bottom: 1rem; display: flex; gap: 0.5rem;">
+                <input type="number" id="edit-item-interval-value" placeholder="1" min="1" required style="flex: 1; padding: 0.5rem 1rem; background: rgba(15, 23, 42, 0.6); border: 1px solid var(--border-color); border-radius: 8px; color: white;">
+                <select id="edit-item-interval-unit" style="flex: 1; padding: 0.5rem 1rem; background: rgba(15, 23, 42, 0.6); border: 1px solid var(--border-color); border-radius: 8px; color: white;">
+                    <option value="minutes">Minutes</option>
+                    <option value="hours">Hours</option>
+                </select>
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-secondary" onclick="closeEditModal()">Cancel</button>
+                <button class="btn btn-primary" onclick="handleEditItem()">Save Changes</button>
+            </div>
+        </div>
+    </div>
+
+    <nav class="navbar">
+        <div class="nav-left">
+            <div class="logo">🎯 StockSniper</div>
+            <div id="mode-badge" class="badge badge-demo">Demo Mode</div>
+        </div>
+        <div class="nav-right">
+            <button id="auth-btn" class="btn btn-login" onclick="openLoginModal()">Login</button>
+        </div>
+    </nav>
+
+    <main class="container">
+        <section class="card process-card">
+            <div class="card-header">
+                <h2>Process Management</h2>
+                <div id="process-status-badge" class="status-indicator down"></div>
+            </div>
+            <p id="process-status-text">Checking status...</p>
+            <div class="btn-group">
+                <button class="btn btn-success" onclick="actionProcess('start')">Start</button>
+                <button class="btn btn-danger" onclick="actionProcess('stop')">Stop</button>
+                <button class="btn btn-warning" onclick="actionProcess('restart')">Restart</button>
+            </div>
+        </section>
+
+        <section class="card settings-card">
+            <h2>Settings</h2>
+            <div class="setting-item" style="margin-bottom: 1rem;">
+                <span>Target Email</span>
+                <div class="input-group" style="max-width: 250px;">
+                    <input type="email" id="target-email" placeholder="email@example.com" onblur="updateEmail()">
+                </div>
+            </div>
+            <div class="setting-item">
+                <span>Enable Logging</span>
+                <label class="switch">
+                    <input type="checkbox" id="logging-toggle" onchange="toggleLogging()">
+                    <span class="slider"></span>
+                </label>
+            </div>
+        </section>
+
+        <section class="card watchlist-card">
+            <h2>Watchlist Items</h2>
+            <form id="add-item-form" onsubmit="handleAddItem(event)">
+                <div class="form-row">
+                    <input type="url" id="item-url" placeholder="https://example.com" required>
+                    <input type="text" id="item-size" placeholder="Size/Variant" required>
+                    <div class="input-group">
+                        <input type="number" id="item-interval-value" placeholder="1" min="1" required>
+                        <select id="item-interval-unit">
+                            <option value="minutes">Minutes</option>
+                            <option value="hours">Hours</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Add Item</button>
+                </div>
+            </form>
+            <div class="table-container">
+                <table id="items-table">
+                    <thead>
+                        <tr>
+                            <th>URL</th>
+                            <th>Size</th>
+                            <th>Interval</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Items will be dynamically inserted here -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+
+    <script src="/static/app.js?v=6"></script>
+</body>
+</html>
